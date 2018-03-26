@@ -3,6 +3,9 @@
 import Vue from 'vue';
 import App from './App';
 import VueRouter from 'vue-router';
+import Vuex from 'vuex';
+import store from './vuex/store';
+import axios from 'axios';
 import ElementUI from 'element-ui';
 import studentInfo from './components/studentInfo.vue';
 import companyInfo from './components/companyInfo.vue';
@@ -12,7 +15,9 @@ import 'element-ui/lib/theme-chalk/index.css'; // element-ui的样式
 import 'element-ui/lib/theme-chalk/display.css';
 import './common/styles/index.scss'; // 自己设计的样式
 
+Vue.prototype.$ajax = axios;
 Vue.use(VueRouter);
+Vue.use(Vuex);
 Vue.use(ElementUI);
 
 Vue.config.productionTip = false;
@@ -60,6 +65,7 @@ const router = new VueRouter({
 new Vue({
   el: '#app',
   router,
+  store,
   components: { App },
   template: '<App/>'
 });
