@@ -7,6 +7,7 @@ import Vuex from 'vuex';
 import store from './vuex/store';
 import axios from 'axios';
 import ElementUI from 'element-ui';
+import vueQuillEditor from 'vue-quill-editor'; // 引入富文本工具
 import studentInfo from './components/studentInfo.vue';
 import companyInfo from './components/companyInfo.vue';
 import workInfo from './components/workInfo.vue';
@@ -14,11 +15,15 @@ import workInfo from './components/workInfo.vue';
 import 'element-ui/lib/theme-chalk/index.css'; // element-ui的样式
 import 'element-ui/lib/theme-chalk/display.css';
 import './common/styles/index.scss'; // 自己设计的样式
+import 'quill/dist/quill.core.css'; // 富文本编辑器的样式
+import 'quill/dist/quill.snow.css';
+import 'quill/dist/quill.bubble.css';
 
 Vue.prototype.$ajax = axios;
 Vue.use(VueRouter);
 Vue.use(Vuex);
 Vue.use(ElementUI);
+Vue.use(vueQuillEditor);
 
 Vue.config.productionTip = false;
 
@@ -71,4 +76,4 @@ new Vue({
 });
 
 // 编程式导航
-router.push({path: '/companyInfo'});
+router.push({path: '/workInfo'});

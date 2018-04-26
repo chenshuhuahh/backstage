@@ -49,7 +49,7 @@
       float: left;
       width: 200px;
       height: 100%;
-      background-image: url("logo1.png");
+      background-image: url('http://p6c2yqflv.bkt.clouddn.com/staticImg/logo1.png');
       background-repeat: no-repeat;
       background-position: center;
     }
