@@ -37,7 +37,7 @@
       </el-table-column>
     </el-table>
     <el-dialog title="作品简介&描述" :visible.sync="dialogDescVisible">
-      {{dialogShowObj.work_summary}}<br/>
+      {{dialogShowObj.work_summary}}<br/><br/>
       <div class="ql-container ql-snow">
         <div class="ql-editor" v-html="dialogShowObj.work_desc">
         </div>
@@ -74,19 +74,43 @@
           cancelButtonText: '不通过',
           type: 'warning'
         }).then(() => {
-          this.$message({
-            type: 'success',
-            message: '《' + row.work_name + '》作品审核通过'
-          });
-          row.work_status = '通过';
-          row.tagType = 'success';
+          let params = new URLSearchParams();
+          params.append('action', 'setWorkStatus');
+          params.append('workId', row.work_id);
+          params.append('workStatus', '1');
+          this.$ajax.post('/api/backstageBox.php', params)
+            .then((res) => {
+              console.log('setWorkStatus:', res);
+              if (res.data === 1) {
+                this.$message({
+                  type: 'success',
+                  message: '《' + row.work_name + '》作品审核通过'
+                });
+                row.work_status = '通过';
+                row.tagType = 'success';
+              } else {
+                this.$message('该作品已经审核通过');
+              }
+            });
         }).catch(() => {
-          this.$message({
-            type: 'warning',
-            message: '《' + row.work_name + '》作品审核不通过'
-          });
-          row.work_status = '不通过';
-          row.tagType = 'danger';
+          let params = new URLSearchParams();
+          params.append('action', 'setWorkStatus');
+          params.append('workId', row.work_id);
+          params.append('workStatus', '-1');
+          this.$ajax.post('/api/backstageBox.php', params)
+            .then((res) => {
+              console.log('setWorkStatus:', res);
+              if (res.data === 1) {
+                this.$message({
+                  type: 'warning',
+                  message: '《' + row.work_name + '》作品审核不通过'
+                });
+                row.work_status = '不通过';
+                row.tagType = 'danger';
+              } else {
+                this.$message('该作品已审核不通过');
+              }
+            });
         });
       },
       handleCurrentChange(currentPage) {
