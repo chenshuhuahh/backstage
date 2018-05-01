@@ -76,4 +76,4 @@ new Vue({
 });
 
 // 编程式导航
-router.push({path: '/workInfo'});
+router.push({path: '/companyInfo'});

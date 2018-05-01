@@ -3,8 +3,8 @@
     <el-table :data="worksList.slice((currentPage-1)*pageSize,currentPage*pageSize)" border style="width: 100%">
       <el-table-column prop="work_id" label="id" width="50"></el-table-column>
       <el-table-column prop="cat_name" label="分类" width="50"></el-table-column>
-      <el-table-column prop="stu_name" label="学生" width="85"></el-table-column>
-      <el-table-column prop="work_name" label="作品名称" width="160"></el-table-column>
+      <el-table-column prop="stu_name" label="学生" width="100"></el-table-column>
+      <el-table-column prop="work_name" label="作品名称" width="180"></el-table-column>
       <el-table-column label="简介&描述" width="270">
         <template slot-scope="scope">
           <a href="#" class="summary" @click="dialogShow(scope.row)">
@@ -35,6 +35,7 @@
           </el-button>
         </template>
       </el-table-column>
+      <el-table-column prop="work_time" label="上传时间" width="95"></el-table-column>
     </el-table>
     <el-dialog title="作品简介&描述" :visible.sync="dialogDescVisible">
       {{dialogShowObj.work_summary}}<br/><br/>
@@ -60,7 +61,7 @@
     data () {
       return {
         currentPage: 1,
-        pageSize: 5,
+        pageSize: 10,
         dialogShowObj: {},
         dialogDescVisible: false,
         worksList: []
@@ -151,7 +152,7 @@
   }
 
   .imgStyle {
-    width: 50px;
+    width: 60px;
     height: auto;
     max-height: 100%;
     margin: 0 4px;

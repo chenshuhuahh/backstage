@@ -3,10 +3,9 @@
     <el-table :data="companyInfoData.slice((currentPage-1)*pageSize,currentPage*pageSize)" border style="width: 100%">
       <el-table-column prop="com_id" label="id" width="50"></el-table-column>
       <el-table-column prop="com_name" label="名称" width="85"></el-table-column>
-      <el-table-column prop="com_address" label="地址" width="150"></el-table-column>
+      <el-table-column prop="com_address" label="地址" width="180"></el-table-column>
       <el-table-column prop="com_boss" label="法定人" width="85"></el-table-column>
-      <el-table-column prop="com_phone" label="联系电话" width="110"></el-table-column>
-      <el-table-column prop="com_email" label="邮箱" width="100"></el-table-column>
+      <el-table-column prop="com_email" label="邮箱" width="150"></el-table-column>
       <el-table-column label="营业执照" width="90">
         <template slot-scope="scope">
           <el-popover
@@ -31,12 +30,9 @@
       </el-table-column>
       <el-table-column prop="com_desc" label="企业介绍">
         <template slot-scope="scope">
-          <a href="#" class="summary" @click="dialogDescVisible=true">
+          <a href="#" class="summary" @click="dialogShow(scope.row)">
             {{scope.row.com_desc}}
           </a>
-          <el-dialog title="自我介绍" :visible.sync="dialogDescVisible">
-            {{scope.row.com_desc}}
-          </el-dialog>
         </template>
       </el-table-column>
       <el-table-column label="审核状态" width="170">
@@ -49,7 +45,11 @@
           </el-button>
         </template>
       </el-table-column>
+      <el-table-column prop="com_time" label="注册时间" width="95"></el-table-column>
     </el-table>
+    <el-dialog title="企业介绍" :visible.sync="dialogDescVisible">
+      {{dialogShowObj.com_desc}}
+    </el-dialog>
     <div class="pageBlock">
       <el-pagination
         @current-change="handleCurrentChange"
@@ -67,52 +67,78 @@
     data () {
       return {
         currentPage: 1,
-        pageSize: 5,
+        pageSize: 10,
+        dialogShowObj: {},
         dialogDescVisible: false,
-        companyInfoData: [{
-          com_id: '1',
-          com_name: '张三dan',
-          com_address: '上海市普陀区金沙江路 1518',
-          com_boss: '仲恺农',
-          com_phone: '18814379708',
-          com_email: '1124203375@qq.com',
-          com_desc: '上海市普陀区金沙江路 1518 弄五彩班里的花色结合一起凑成唯美的照片五彩班里的花色结合一起凑成唯美的' +
-          '照片五彩班里的花色结合一起凑成唯美的照片五彩班里的花色结合一起五彩班里的花色结合一起凑成唯美的照片五彩班里的花色结' +
-          '合一起凑成唯美的照片五彩班里的花色结合一起凑成唯美的照片凑成唯美的照片',
-          com_license: './static/img/6.jpg',
-          com_avatar: './static/img/15.jpg',
-          com_status: '未审核',
-          tagType: 'info'
-        }]
+        companyInfoData: []
       };
     },
     methods: {
       handlePass(index, row) {
         console.log(index, row);
-        this.$confirm('本作品是否审核通过?', '提示', {
+        this.$confirm('该企业身份是否审核通过?', '提示', {
           confirmButtonText: '通过',
           cancelButtonText: '不通过',
           type: 'warning'
         }).then(() => {
-          this.$message({
-            type: 'success',
-            message: '《' + row.com_name + '》作品审核通过'
-          });
-          row.com_status = '通过';
-          row.tagType = 'success';
+          let params = new URLSearchParams();
+          params.append('action', 'setCompanyStatus');
+          params.append('comId', row.com_id);
+          params.append('comStatus', '1');
+          this.$ajax.post('/api/backstageBox.php', params)
+            .then((res) => {
+              console.log('setCompanyStatus:', res);
+              if (res.data === 1) {
+                this.$message({
+                  type: 'success',
+                  message: '企业[ ' + row.com_name + ' ]身份审核通过'
+                });
+                row.com_status = '通过';
+                row.tagType = 'success';
+              } else {
+                this.$message('该企业身份已经审核通过');
+              }
+            });
         }).catch(() => {
-          this.$message({
-            type: 'warning',
-            message: '《' + row.com_name + '》作品审核不通过'
-          });
-          row.com_status = '不通过';
-          row.tagType = 'danger';
+          let params = new URLSearchParams();
+          params.append('action', 'setCompanyStatus');
+          params.append('comId', row.com_id);
+          params.append('comStatus', '-1');
+          this.$ajax.post('/api/backstageBox.php', params)
+            .then((res) => {
+              console.log('setCompanyStatus:', res);
+              if (res.data === 1) {
+                this.$message({
+                  type: 'warning',
+                  message: '企业[ ' + row.com_name + ' ]身份审核不通过'
+                });
+                row.com_status = '不通过';
+                row.tagType = 'danger';
+              } else {
+                this.$message('该企业身份已审核不通过');
+              }
+            });
         });
       },
       handleCurrentChange(currentPage) {
         console.log(`当前页: ${currentPage}`);
         this.currentPage = currentPage;
+      },
+      dialogShow(row) {
+        // 记录数据
+        this.dialogShowObj = row;
+        // 显示弹窗
+        this.dialogDescVisible = true;
       }
+    },
+    mounted() {
+      let params = new URLSearchParams();
+      params.append('action', 'allCompanyInfo');
+      this.$ajax.post('/api/backstageBox.php', params)
+        .then((res) => {
+          console.log('allCompanyInfo res:', res);
+          this.companyInfoData = res.data;
+        });
     }
   };
 </script>

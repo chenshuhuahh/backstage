@@ -30,11 +30,9 @@
     color: #2c3e50;
     height: 100%;
     .bothContainer {
-      position: relative;
-      margin: 0 20px 0 10px;
+      margin: 0 20px;
     }
     .mainContainer {
-      margin-left: 230px;
       height: 100%;
     }
   }
