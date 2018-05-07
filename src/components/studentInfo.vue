@@ -1,5 +1,16 @@
 <template>
   <div class="studentInfo">
+    <div class="tagList">
+      <span class="tagLi" @click="selectTag('0')"><el-tag type="info" size="medium">未审核</el-tag></span>
+      <span class="tagLi" @click="selectTag('1')"><el-tag type="success" size="medium">审核通过</el-tag></span>
+      <span class="tagLi" @click="selectTag('-1')"><el-tag type="danger" size="medium">审核不通过</el-tag></span>
+      <el-input
+        placeholder="请输入搜索内容"
+        suffix-icon="el-icon-search"
+        v-model="searchWork"
+        @keyup.enter.native="handleSearch">
+      </el-input>
+    </div>
     <el-table :data="studentInfoData.slice((currentPage-1)*pageSize,currentPage*pageSize)" border style="width: 100%">
       <el-table-column prop="stu_id" label="id" width="50"></el-table-column>
       <el-table-column prop="stu_name" label="姓名" width="85"></el-table-column>
@@ -12,7 +23,7 @@
             placement="right"
             width="100%"
             trigger="hover">
-            <img :src="scope.row.stu_card" :alt="scope.row.stu_name">
+            <img class="expandImg" :src="scope.row.stu_card" :alt="scope.row.stu_name">
             <a href="#" slot="reference"><img class="imgCardStyle" :src="scope.row.stu_card" :alt="scope.row.stu_name"></a>
           </el-popover>
         </template>
@@ -25,7 +36,7 @@
             placement="right"
             width="100%"
             trigger="hover">
-            <img :src="scope.row.stu_avatar" :alt="scope.row.stu_name">
+            <img class="expandImg" :src="scope.row.stu_avatar" :alt="scope.row.stu_name">
             <a href="#" slot="reference"><img class="imgStyle" :src="scope.row.stu_avatar" :alt="scope.row.stu_name"></a>
           </el-popover>
         </template>
@@ -68,6 +79,7 @@
   export default {
     data () {
       return {
+        searchWork: '',
         currentPage: 1,
         pageSize: 5,
         dialogShowObj: {},
@@ -131,6 +143,41 @@
         this.dialogShowObj = row;
         // 显示弹窗
         this.dialogDescVisible = true;
+      },
+      selectTag(type) {
+        let params = new URLSearchParams();
+        params.append('action', 'selectStudentTag');
+        params.append('status', type);
+        this.$ajax.post('/api/backstageBox.php', params)
+          .then((res) => {
+            console.log('selectTag res:', res);
+            if (res.data !== 0) {
+              this.studentInfoData = res.data;
+            } else {
+              this.studentInfoData = [];
+            }
+          });
+      },
+      handleSearch() {
+        this.studentInfoData = [];
+        if (this.searchWork) {
+          // 做搜索的时候，是对当前这个分块后的部分进行搜索，得到的结果更新数组
+          let params = new URLSearchParams();
+          params.append('action', 'searchStudent');
+          params.append('searchContent', this.searchWork);
+          this.$ajax.post('/api/backstageBox.php', params)
+            .then((res) => {
+              console.log('searchStudent', res.data);
+              if (res.data === 0) {
+                this.studentInfoData = [];
+              } else {
+                this.studentInfoData = res.data;
+              }
+            });
+        } else {
+          this.$message('请输入搜索内容');
+          return false;
+        }
       }
     },
     mounted() {
@@ -139,7 +186,11 @@
       this.$ajax.post('/api/backstageBox.php', params)
         .then((res) => {
           console.log('allStudentInfo res:', res);
-          this.studentInfoData = res.data;
+          if (res.data !== 0) {
+            this.studentInfoData = res.data;
+          } else {
+            this.studentInfoData = [];
+          }
         });
     }
   };
@@ -153,6 +204,20 @@
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     text-decoration: underline;
+  }
+  .el-input {
+    display: inline-block;
+    margin-left: 20px;
+    width: 300px;
+  }
+  .tagList {
+    margin-bottom: 10px;
+    .tagLi {
+      cursor: pointer;
+    }
+  }
+  .expandImg {
+    max-height: 400px;
   }
 
   .imgStyle {

@@ -1,5 +1,16 @@
 <template>
   <div class="companyInfo">
+    <div class="tagList">
+      <span class="tagLi" @click="selectTag('0')"><el-tag type="info" size="medium">未审核</el-tag></span>
+      <span class="tagLi" @click="selectTag('1')"><el-tag type="success" size="medium">审核通过</el-tag></span>
+      <span class="tagLi" @click="selectTag('-1')"><el-tag type="danger" size="medium">审核不通过</el-tag></span>
+      <el-input
+        placeholder="请输入搜索内容"
+        suffix-icon="el-icon-search"
+        v-model="searchWork"
+        @keyup.enter.native="handleSearch">
+      </el-input>
+    </div>
     <el-table :data="companyInfoData.slice((currentPage-1)*pageSize,currentPage*pageSize)" border style="width: 100%">
       <el-table-column prop="com_id" label="id" width="50"></el-table-column>
       <el-table-column prop="com_name" label="名称" width="85"></el-table-column>
@@ -12,7 +23,7 @@
             placement="right"
             width="100%"
             trigger="hover">
-            <img :src="scope.row.com_license" :alt="scope.row.com_name">
+            <img class="expandImg" :src="scope.row.com_license" :alt="scope.row.com_name">
             <a href="#" slot="reference"><img class="licenseImgStyle" :src="scope.row.com_license" :alt="scope.row.com_name"></a>
           </el-popover>
         </template>
@@ -23,7 +34,7 @@
             placement="right"
             width="100%"
             trigger="hover">
-            <img :src="scope.row.com_avatar" :alt="scope.row.com_name">
+            <img class="expandImg" :src="scope.row.com_avatar" :alt="scope.row.com_name">
             <a href="#" slot="reference"><img class="avatarImgStyle" :src="scope.row.com_avatar" :alt="scope.row.com_name"></a>
           </el-popover>
         </template>
@@ -66,6 +77,7 @@
   export default {
     data () {
       return {
+        searchWork: '',
         currentPage: 1,
         pageSize: 10,
         dialogShowObj: {},
@@ -129,6 +141,41 @@
         this.dialogShowObj = row;
         // 显示弹窗
         this.dialogDescVisible = true;
+      },
+      selectTag(type) {
+        let params = new URLSearchParams();
+        params.append('action', 'selectCompanyTag');
+        params.append('status', type);
+        this.$ajax.post('/api/backstageBox.php', params)
+          .then((res) => {
+            console.log('selectTag res:', res);
+            if (res.data !== 0) {
+              this.companyInfoData = res.data;
+            } else {
+              this.companyInfoData = [];
+            }
+          });
+      },
+      handleSearch() {
+        this.companyInfoData = [];
+        if (this.searchWork) {
+          // 做搜索的时候，是对当前这个分块后的部分进行搜索，得到的结果更新数组
+          let params = new URLSearchParams();
+          params.append('action', 'searchCompany');
+          params.append('searchContent', this.searchWork);
+          this.$ajax.post('/api/backstageBox.php', params)
+            .then((res) => {
+              console.log('searchList', res.data);
+              if (res.data === 0) {
+                this.companyInfoData = [];
+              } else {
+                this.companyInfoData = res.data;
+              }
+            });
+        } else {
+          this.$message('请输入搜索内容');
+          return false;
+        }
       }
     },
     mounted() {
@@ -137,7 +184,11 @@
       this.$ajax.post('/api/backstageBox.php', params)
         .then((res) => {
           console.log('allCompanyInfo res:', res);
-          this.companyInfoData = res.data;
+          if (res.data !== 0) {
+            this.companyInfoData = res.data;
+          } else {
+            this.companyInfoData = [];
+          }
         });
     }
   };
@@ -151,6 +202,21 @@
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     text-decoration: underline;
+  }
+  .el-input {
+    display: inline-block;
+    margin-left: 20px;
+    width: 300px;
+  }
+  .tagList {
+    margin-bottom: 10px;
+    .tagLi {
+      cursor: pointer;
+    }
+  }
+
+  .expandImg {
+    max-height: 400px;
   }
 
   .avatarImgStyle {

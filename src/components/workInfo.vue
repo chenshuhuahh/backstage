@@ -1,5 +1,20 @@
 <template>
   <div class="workInfo">
+    <div class="tagList">
+      <span class="tagLi" @click="selectTag('0')"><el-tag type="info" size="medium">未审核</el-tag></span>
+      <span class="tagLi" @click="selectTag('1')"><el-tag type="success" size="medium">审核通过</el-tag></span>
+      <span class="tagLi" @click="selectTag('-1')"><el-tag type="danger" size="medium">审核不通过</el-tag></span>
+      <span class="tagLi" @click="selectCat('1')"><el-tag size="medium">摄影</el-tag></span>
+      <span class="tagLi" @click="selectCat('2')"><el-tag type="warning" size="medium">设计</el-tag></span>
+      <span class="tagLi" @click="selectCat('3')"><el-tag size="medium">文章</el-tag></span>
+      <span class="tagLi" @click="selectCat('4')"><el-tag type="warning" size="medium">程序</el-tag></span>
+      <el-input
+        placeholder="请输入搜索内容"
+        suffix-icon="el-icon-search"
+        v-model="searchWork"
+        @keyup.enter.native="handleSearch">
+      </el-input>
+    </div>
     <el-table :data="worksList.slice((currentPage-1)*pageSize,currentPage*pageSize)" border style="width: 100%">
       <el-table-column prop="work_id" label="id" width="50"></el-table-column>
       <el-table-column prop="cat_name" label="分类" width="50"></el-table-column>
@@ -60,6 +75,7 @@
   export default {
     data () {
       return {
+        searchWork: '',
         currentPage: 1,
         pageSize: 10,
         dialogShowObj: {},
@@ -123,6 +139,56 @@
         this.dialogShowObj = row;
         // 显示弹窗
         this.dialogDescVisible = true;
+      },
+      selectTag(type) {
+        let params = new URLSearchParams();
+        params.append('action', 'selectWorkTag');
+        params.append('status', type);
+        this.$ajax.post('/api/backstageBox.php', params)
+          .then((res) => {
+            console.log('selectTag res:', res);
+            if (res.data !== 0) {
+              this.worksList = res.data;
+            } else {
+              this.worksList = [];
+            }
+          });
+      },
+      selectCat(catId) {
+        let params = new URLSearchParams();
+        params.append('action', 'selectWorkCat');
+        params.append('cat_id', catId);
+        this.$ajax.post('/api/backstageBox.php', params)
+          .then((res) => {
+            console.log('selectWorkCat res:', res);
+            if (res.data !== 0) {
+              this.worksList = res.data;
+            } else {
+              this.worksList = [];
+            }
+          });
+      },
+      handleSearch() {
+        this.worksList = [];
+        if (this.searchWork) {
+          // 做搜索的时候，是对当前这个分块后的部分进行搜索，得到的结果更新photoIntroduction数组
+          console.log(this.searchWork);
+          let params = new URLSearchParams();
+          params.append('action', 'searchWorks');
+          params.append('searchContent', this.searchWork);
+          this.$ajax.post('/api/backstageBox.php', params)
+            .then((res) => {
+              console.log('searchWorks', res.data);
+              if (res.data !== 0) {
+                this.worksList = res.data;
+              } else {
+                this.worksList = [];
+              }
+            });
+        } else {
+          this.$message('请输入搜索内容');
+          return false;
+        }
       }
     },
     mounted() {
@@ -131,7 +197,11 @@
       this.$ajax.post('/api/backstageBox.php', params)
         .then((res) => {
           console.log('allWorksInfo res:', res);
-          this.worksList = res.data;
+          if (res.data !== 0) {
+            this.worksList = res.data;
+          } else {
+            this.worksList = [];
+          }
         });
     }
   };
@@ -150,7 +220,17 @@
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical; */
   }
-
+  .el-input {
+    display: inline-block;
+    margin-left: 20px;
+    width: 300px;
+  }
+  .tagList {
+    margin-bottom: 10px;
+    .tagLi {
+      cursor: pointer;
+    }
+  }
   .imgStyle {
     width: 60px;
     height: auto;
